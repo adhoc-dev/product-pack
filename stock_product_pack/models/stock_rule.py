@@ -19,10 +19,5 @@ class ProcurementGroup(models.Model):
                 and procurement.product_id.pack_type == "detailed"
             ):
                 procurements.remove(procurement)
-                sale_order_id = procurement.values.get("sale_line_id")
-                if sale_order_id:
-                    self.env["sale.order.line"].browse(
-                        sale_order_id
-                    ).qty_delivered = procurement.product_qty
 
         return super(ProcurementGroup, self).run(procurements)

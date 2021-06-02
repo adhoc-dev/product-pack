@@ -12,7 +12,7 @@
     "author": "NaN·tic, " "ADHOC SA, " "Tecnativa, " "Odoo Community Association (OCA)",
     "maintainers": ["ernestotejeda"],
     "license": "AGPL-3",
-    "depends": ["product_pack", "stock"],
+    "depends": ["product_pack", "sale_stock"],
     "data": ["security/ir.model.access.csv", "views/product_template_views.xml"],
     "installable": True,
     "auto_install": True,

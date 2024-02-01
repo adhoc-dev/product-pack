@@ -33,8 +33,8 @@ class ProductProduct(models.Model):
     def price_compute(
         self, price_type, uom=False, currency=False, company=False, date=False
     ):
-        packs, no_packs = self.split_pack_products()
-        prices = super(ProductProduct, no_packs).price_compute(
+        packs, _ = self.split_pack_products()
+        prices = super(ProductProduct, self).price_compute(
             price_type, uom, currency, company, date
         )
         # TODO:@bruno-zanotti prefetch_fields=False still necessary?
@@ -42,7 +42,7 @@ class ProductProduct(models.Model):
             pack_line_prices = product.sudo().pack_line_ids._pack_line_price_compute(
                 price_type, uom, currency, company, date
             )
-            prices[product.id] = sum(pack_line_prices.values())
+            prices[product.id] += sum(pack_line_prices.values())
         return prices
 
     @api.depends("list_price", "price_extra")

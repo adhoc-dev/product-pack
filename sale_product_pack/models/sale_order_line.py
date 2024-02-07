@@ -75,7 +75,6 @@ class SaleOrderLine(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        new_vals = []
         res = self.browse()
         for elem in vals_list:
             product = self.env["product.product"].browse(elem.get("product_id"))
@@ -84,8 +83,7 @@ class SaleOrderLine(models.Model):
                 line.expand_pack_line()
                 res |= line
             else:
-                new_vals.append(elem)
-        res |= super().create(new_vals)
+                res |= super().create([elem])
         return res
 
     def write(self, vals):
@@ -126,6 +124,7 @@ class SaleOrderLine(models.Model):
             "view_mode": "tree,form",
             "domain": domain,
         }
+
 
     def _get_pack_line_discount(self):
         """returns the discount settled in the parent pack lines"""

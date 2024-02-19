@@ -125,7 +125,6 @@ class SaleOrderLine(models.Model):
             "domain": domain,
         }
 
-
     def _get_pack_line_discount(self):
         """returns the discount settled in the parent pack lines"""
         self.ensure_one()
@@ -143,3 +142,4 @@ class SaleOrderLine(models.Model):
         for pack_line in self.filtered("pack_parent_line_id"):
             pack_line.discount = pack_line._get_pack_line_discount()
         return res
+

@@ -60,9 +60,7 @@ class ProductPackLine(models.Model):
         pack_line_prices = {}
         if self._context.get("pricelist"):
             for line in self:
-                pack_line_prices[line.product_id.id] = line.with_context(
-                    quantity=line.quantity
-                ).product_id._get_contextual_price()
+                pack_line_prices[line.product_id.id] = line.product_id._get_contextual_price() * line.quantity
         else:
             pack_line_prices = self.product_id.price_compute(
                 price_type, uom, currency, company, date

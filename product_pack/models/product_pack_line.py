@@ -54,6 +54,5 @@ class ProductPackLine(models.Model):
                     )
                 pack_lines = pack_lines.mapped("product_id.pack_line_ids")
 
-    def get_price(self):
-        self.ensure_one()
-        return self.product_id.lst_price * self.quantity
+    def _compute_price(self, base_price):
+        return base_price * self.quantity

@@ -144,3 +144,17 @@ class SaleOrderLine(models.Model):
         for pack_line in self.filtered("pack_parent_line_id"):
             pack_line.discount = pack_line._get_pack_line_discount()
         return res
+
+    def _get_pricelist_price(self):
+        """Compute the price given by the pricelist for the given line information.
+
+        :return: the product sales price in the order currency (without taxes)
+        :rtype: float
+        """
+        price = super()._get_pricelist_price()
+
+        if self.product_id.product_tmpl_id._is_pack_to_be_handled():
+            price = self.order_id.pricelist_id._get_product_price(
+                product=self.product_id.product_tmpl_id, quantity=1.0
+            )
+        return price

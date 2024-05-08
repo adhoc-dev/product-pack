@@ -47,3 +47,8 @@ class ProductPack(models.Model):
         for line in self:
             pack_line_prices[line.product_id.id] *= 1 - line.sale_discount / 100.0
         return pack_line_prices
+
+    def _compute_price(self, base_price):
+        return super()._compute_price(base_price=base_price) * (
+            1 - self.sale_discount / 100.0
+        )

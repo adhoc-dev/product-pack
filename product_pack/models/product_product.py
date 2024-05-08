@@ -26,27 +26,12 @@ class ProductProduct(models.Model):
         can be overloaded to introduce filtering function by date, etc..."""
         return self.mapped("pack_line_ids")
 
+    def _is_pack_to_be_handled(self):
+        return self.product_tmpl_id._is_pack_to_be_handled()
+
     def split_pack_products(self):
         packs = self.filtered(lambda p: p.product_tmpl_id._is_pack_to_be_handled())
         return packs, (self - packs)
-
-    def price_compute(
-        self, price_type, uom=False, currency=False, company=False, date=False
-    ):
-        packs, no_packs = self.split_pack_products()
-        # NOTE: If we want to change the price computation of the "Totalized in main
-        # product" and "Non detailed" packs to sum the component prices plus the main
-        # products price, we should call super for all the products here and sum the
-        #  price plus the components (only for packs to be handled)
-        prices = super(ProductProduct, no_packs).price_compute(
-            price_type, uom, currency, company, date
-        )
-        for product in packs.with_context(prefetch_fields=False):
-            pack_line_prices = product.sudo().pack_line_ids._pack_line_price_compute(
-                price_type, uom, currency, company, date
-            )
-            prices[product.id] = sum(pack_line_prices.values())
-        return prices
 
     @api.depends("list_price", "price_extra")
     def _compute_product_lst_price(self):

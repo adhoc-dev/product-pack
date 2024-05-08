@@ -64,3 +64,6 @@ class ProductPackLine(models.Model):
             pack_line_prices[line.product_id.id] *= line.quantity
 
         return pack_line_prices
+
+    def _compute_price(self, base_price):
+        return base_price * self.quantity

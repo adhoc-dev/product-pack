@@ -48,19 +48,3 @@ class ProductTemplate(models.Model):
                         "pack_parents": ", ".join(published.mapped("name")),
                     }
                 )
-
-    # Necessary for the website_sale_product_pack module because the price in /shop
-    # is calculated by the product.template.price_compute method
-    def price_compute(
-        self, price_type, uom=False, currency=False, company=False, date=False
-    ):
-        templates_with_packs, templates_without_packs = self.split_pack_products()
-        prices = super(ProductTemplate, templates_without_packs).price_compute(
-            price_type, uom, currency, company, date
-        )
-        for template in templates_with_packs.with_context(prefetch_fields=False):
-            pack_line_prices = template.sudo().pack_line_ids._pack_line_price_compute(
-                price_type, uom, currency, company, date
-            )
-            prices[template.id] = sum(pack_line_prices.values())
-        return prices

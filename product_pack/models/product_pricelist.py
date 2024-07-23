@@ -10,7 +10,7 @@ class Pricelist(models.Model):
         :returns: unit price of the pack product + components,
                   considering pricelist rules
         """
-        self.ensure_one()
+        self and self.ensure_one()
         if product._is_pack_to_be_handled():
             # NOTE: This exception is to avoid adding the list price of the packs
             # "totalized" and "non detailed". Should be removed to solve the issue #169.

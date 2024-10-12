@@ -53,6 +53,8 @@ class SaleOrderLine(models.Model):
         # only want to update prices
         vals_list = []
         if self.product_id.pack_ok and self.pack_type == "detailed":
+            if self.pack_component_price == "detailed":
+                self.price_unit = 0.0
             for subline in self.product_id.get_pack_lines():
                 vals = subline.get_sale_order_line_vals(self, self.order_id)
                 if write:
@@ -140,6 +142,8 @@ class SaleOrderLine(models.Model):
             price = self.order_id.pricelist_id._get_product_price(
                 product=self.product_id.product_tmpl_id, quantity=1.0
             )
+        if self.pack_type == "detailed" and self.pack_component_price == "detailed":
+            price = 0.0
         return price
 
     def _get_pack_line_discount(self):

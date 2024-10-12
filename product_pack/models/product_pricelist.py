@@ -17,6 +17,7 @@ class Pricelist(models.Model):
             if (
                 product.pack_type == "non_detailed"
                 or product.pack_component_price == "totalized"
+                or (product.pack_component_price == "detailed" and product.pack_type == "detailed")
             ):
                 pack_price = 0
             else:

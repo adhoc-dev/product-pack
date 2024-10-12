@@ -17,7 +17,7 @@ class SaleOrder(models.Model):
                 pack = line.pack_parent_line_id.product_id
                 detailed_totalized_pack = (
                     pack.pack_type == "detailed"
-                    and pack.pack_component_price in {"totalized", "ignored"}
+                    and pack.pack_component_price in {"totalized", "ignored", "detailed"}
                 )
                 return super(
                     SaleOrder,

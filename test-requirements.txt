@@ -1,0 +1,2 @@
+odoo_test_helper
+odoo-addon-sale_product_pack @ git+https://github.com/OCA/product-pack.git@refs/pull/190/head#subdirectory=sale_product_pack

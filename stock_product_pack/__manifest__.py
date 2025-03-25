@@ -11,7 +11,7 @@
     "of the packs",
     "website": "https://github.com/OCA/product-pack",
     "author": "NaN·tic, ADHOC SA, Tecnativa, Odoo Community Association (OCA)",
-    "maintainers": ["ernestotejeda"],
+    "maintainers": ["ernestotejeda", "augusto-weiss"],
     "license": "AGPL-3",
     "depends": ["product_pack", "stock"],
     "data": ["security/ir.model.access.csv", "views/product_template_views.xml"],

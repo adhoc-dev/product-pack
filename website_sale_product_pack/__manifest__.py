@@ -14,6 +14,7 @@
         ],
     },
     "author": "Tecnativa, Odoo Community Association (OCA)",
+    "maintainers": ["augusto-weiss"],
     "website": "https://github.com/OCA/product-pack",
     "installable": True,
 }

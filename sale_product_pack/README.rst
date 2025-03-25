@@ -59,11 +59,11 @@ To use this module, you need to:
 Known issues / Roadmap
 ======================
 
-- If this module is installed and stock module is installed too, when
-  you create a Sale order for a *Non detailed* Pack and you confirm it,
-  a *Stock picking* is not created with the storable components of that
-  Pack. So, add a new module called *sale_stock_product_pack* that adds
-  that feature.
+-  If this module is installed and stock module is installed too, when
+   you create a Sale order for a *Non detailed* Pack and you confirm it,
+   a *Stock picking* is not created with the storable components of that
+   Pack. So, add a new module called *sale_stock_product_pack* that adds
+   that feature.
 
 Bug Tracker
 ===========
@@ -88,28 +88,28 @@ Authors
 Contributors
 ------------
 
-- `Tecnativa <https://www.tecnativa.com>`__:
+-  `Tecnativa <https://www.tecnativa.com>`__:
 
-  - Ernesto Tejeda
-  - Pedro M. Baeza
+   -  Ernesto Tejeda
+   -  Pedro M. Baeza
 
-- `Akretion <https://akretion.com>`__:
+-  `Akretion <https://akretion.com>`__:
 
-  - Raphaël Reverdy
+   -  Raphaël Reverdy
 
-- `Open Source Integrators <https://opensourceintegrators.eu>`__:
+-  `Open Source Integrators <https://opensourceintegrators.eu>`__:
 
-  - Daniel Reis <dreis@opensourceintegrators.com>
+   -  Daniel Reis <dreis@opensourceintegrators.com>
 
-- `Acsone <https://www.acsone.eu/>`__:
+-  `Acsone <https://www.acsone.eu/>`__:
 
-  - Maxime Franco
+   -  Maxime Franco
 
-- `ADHOC SA <https://www.adhoc.com.ar>`__:
+-  `ADHOC SA <https://www.adhoc.com.ar>`__:
 
-  - Bruno Zanotti
-  - Augusto Weiss
-  - Nicolas Col
+   -  Bruno Zanotti
+   -  Augusto Weiss
+   -  Nicolas Col
 
 Maintainers
 -----------
@@ -127,10 +127,13 @@ promote its widespread use.
 .. |maintainer-victoralmau| image:: https://github.com/victoralmau.png?size=40px
     :target: https://github.com/victoralmau
     :alt: victoralmau
+.. |maintainer-augusto-weiss| image:: https://github.com/augusto-weiss.png?size=40px
+    :target: https://github.com/augusto-weiss
+    :alt: augusto-weiss
 
-Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
+Current `maintainers <https://odoo-community.org/page/maintainer-role>`__:
 
-|maintainer-victoralmau| 
+|maintainer-victoralmau| |maintainer-augusto-weiss| 
 
 This module is part of the `OCA/product-pack <https://github.com/OCA/product-pack/tree/17.0/sale_product_pack>`_ project on GitHub.
 

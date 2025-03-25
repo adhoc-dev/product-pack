@@ -75,16 +75,16 @@ Authors
 Contributors
 ------------
 
-- `Tecnativa <https://www.tecnativa.com>`__:
+-  `Tecnativa <https://www.tecnativa.com>`__:
 
-  - Ernesto Tejeda
-  - Pedro M. Baeza
-  - Sergio Teruel
-  - João Marques
+   -  Ernesto Tejeda
+   -  Pedro M. Baeza
+   -  Sergio Teruel
+   -  João Marques
 
-- `ADHOC SA <https://www.adhoc.com.ar>`__:
+-  `ADHOC SA <https://www.adhoc.com.ar>`__:
 
-  - Bruno Zanotti
+   -  Bruno Zanotti
 
 Maintainers
 -----------
@@ -102,10 +102,13 @@ promote its widespread use.
 .. |maintainer-ernestotejeda| image:: https://github.com/ernestotejeda.png?size=40px
     :target: https://github.com/ernestotejeda
     :alt: ernestotejeda
+.. |maintainer-augusto-weiss| image:: https://github.com/augusto-weiss.png?size=40px
+    :target: https://github.com/augusto-weiss
+    :alt: augusto-weiss
 
-Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
+Current `maintainers <https://odoo-community.org/page/maintainer-role>`__:
 
-|maintainer-ernestotejeda| 
+|maintainer-ernestotejeda| |maintainer-augusto-weiss| 
 
 This module is part of the `OCA/product-pack <https://github.com/OCA/product-pack/tree/17.0/stock_product_pack>`_ project on GitHub.
 

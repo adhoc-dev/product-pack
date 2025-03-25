@@ -8,7 +8,7 @@
     "category": "Sale",
     "website": "https://github.com/OCA/product-pack",
     "author": "Tecnativa, Odoo Community Association (OCA)",
-    "maintainers": ["chienandalu"],
+    "maintainers": ["chienandalu", "augusto-weiss"],
     "license": "AGPL-3",
     "depends": ["sale_product_pack", "stock_product_pack"],
     "data": [],

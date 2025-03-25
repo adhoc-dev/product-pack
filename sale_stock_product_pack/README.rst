@@ -31,8 +31,8 @@ Sale Stock Product Pack
 This modules adds compatibility of product packs with sales and stock
 altogether:
 
-- Correctly compute delivered quantities for the different types of
-  packs so they can be properly invoiced when the pack is storable.
+-  Correctly compute delivered quantities for the different types of
+   packs so they can be properly invoiced when the pack is storable.
 
 **Table of contents**
 
@@ -42,8 +42,8 @@ altogether:
 Known issues / Roadmap
 ======================
 
-- Non detailed packs aren't yet supported by stock_product_pack, so no
-  support for them either in this module.
+-  Non detailed packs aren't yet supported by stock_product_pack, so no
+   support for them either in this module.
 
 Bug Tracker
 ===========
@@ -66,10 +66,10 @@ Authors
 Contributors
 ------------
 
-- `Tecnativa <https://www.tecnativa.com>`__:
+-  `Tecnativa <https://www.tecnativa.com>`__:
 
-  - Ernesto Tejeda
-  - Pedro M. Baeza
+   -  Ernesto Tejeda
+   -  Pedro M. Baeza
 
 Maintainers
 -----------
@@ -87,10 +87,13 @@ promote its widespread use.
 .. |maintainer-chienandalu| image:: https://github.com/chienandalu.png?size=40px
     :target: https://github.com/chienandalu
     :alt: chienandalu
+.. |maintainer-augusto-weiss| image:: https://github.com/augusto-weiss.png?size=40px
+    :target: https://github.com/augusto-weiss
+    :alt: augusto-weiss
 
-Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
+Current `maintainers <https://odoo-community.org/page/maintainer-role>`__:
 
-|maintainer-chienandalu| 
+|maintainer-chienandalu| |maintainer-augusto-weiss| 
 
 This module is part of the `OCA/product-pack <https://github.com/OCA/product-pack/tree/17.0/sale_stock_product_pack>`_ project on GitHub.
 

@@ -85,3 +85,7 @@ class ProductPackLine(models.Model):
             prices[line.product_id.id] *= line.quantity
 
         return prices
+
+    @api.model
+    def get_pack_line_price(self, pricelist, quantity, uom=None, date=False, **kwargs):
+        return self._get_pack_line_price(pricelist=pricelist, quantity=quantity, uom=uom, date=date, **kwargs)

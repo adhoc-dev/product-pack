@@ -86,6 +86,25 @@ class ProductTemplate(models.Model):
                 quantity=quantity,
                 currency=currency,
             )
+            # Apply taxes
+            fiscal_position = website.fiscal_position_id.sudo()
+            product_taxes = (
+                product_or_template.sudo().taxes_id._filter_taxes_by_company(
+                    self.env.company
+                )
+            )
+            taxes = self.env["account.tax"]
+            if product_taxes:
+                taxes = fiscal_position.map_tax(product_taxes)
+                for price_key in ("price", "list_price", "price_extra"):
+                    res[price_key] = self._apply_taxes_to_price(
+                        res[price_key],
+                        currency,
+                        product_taxes,
+                        taxes,
+                        product_or_template,
+                        website=website,
+                    )
 
         return res
 
@@ -96,9 +115,27 @@ class ProductTemplate(models.Model):
         if packs:
             pricelist = website.pricelist_id
             for pack in packs:
-                prices[pack.id] = {
+                price = {
                     "price_reduce": pricelist.with_context(
                         whole_pack_price=True
                     )._get_product_price(product=pack, quantity=1.0)
                 }
+                # Apply taxes
+                fiscal_position = website.fiscal_position_id.sudo()
+                product_taxes = pack.sudo().taxes_id._filter_taxes_by_company(
+                    self.env.company
+                )
+                taxes = self.env["account.tax"]
+                if product_taxes:
+                    currency = website.currency_id
+                    taxes = fiscal_position.map_tax(product_taxes)
+                    price["price_reduce"] = self._apply_taxes_to_price(
+                        price["price_reduce"],
+                        currency,
+                        product_taxes,
+                        taxes,
+                        pack,
+                        website=website,
+                    )
+                prices[pack.id] = price
         return prices

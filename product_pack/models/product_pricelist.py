@@ -6,7 +6,6 @@ class Pricelist(models.Model):
 
     def _get_product_price(self, product, quantity, uom=None, date=False, **kwargs):
         """Compute the pricelist price for the specified pack product, qty & uom.
-
         :returns: unit price of the pack product + components, considering pricelist rules
         """
         self.ensure_one()
@@ -19,9 +18,9 @@ class Pricelist(models.Model):
             ):
                 pack_price = 0
             else:
-                pack_price = self._compute_price_rule(
-                    product, quantity, uom=uom, date=date, **kwargs
-                )[product.id][0]
+                # Para packs "detailed", el precio es SOLO la suma de componentes
+                # No se suma el precio del pack en sí para evitar duplicación
+                pack_price = 0
 
             for line in product.sudo().pack_line_ids:
                 pack_price += line._get_pack_line_price(

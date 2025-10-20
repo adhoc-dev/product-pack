@@ -29,7 +29,7 @@
                 line.pack_parent_line_id
             </attribute>
         </xpath>
-        <xpath expr="//div[@t-else='']" position="attributes">
+        <xpath expr="//div[@t-elif='line.product_id.image_128']" position="attributes">
             <attribute
                 name="t-if"
             >line.product_id.image_128 and not line.pack_parent_line_id</attribute>

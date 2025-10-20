@@ -12,8 +12,7 @@ class Website(models.Model):
         if update_pricelist:
             return super(
                 Website, self.with_context(update_pricelist=True)
-            ).sale_get_order(force_create, update_pricelist)
+            ).sale_get_order(force_create)
         return super().sale_get_order(
             force_create,
-            update_pricelist,
         )

@@ -14,7 +14,13 @@ class TestStockProductPack(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        category_all_id = cls.env.ref("product.product_category_all").id
+        # Create a product category for testing instead of relying on demo data
+        category = cls.env["product.category"].create(
+            {
+                "name": "Test Category",
+            }
+        )
+        category_all_id = category.id
         cls.product_obj = cls.env["product.product"]
         cls.stock_rule_obj = cls.env["stock.rule"]
         # The model stock doesn't add anymore the 'product'
@@ -135,10 +141,11 @@ class TestStockProductPack(TransactionCase):
         location_id = (self.env.ref("stock.stock_location_suppliers").id,)
         location_dest_id = (self.env.ref("stock.stock_location_stock").id,)
         components = self.pack_dc.pack_line_ids.mapped("product_id")
+        partner = self.env["res.partner"].create({"name": "Test Partner"})
 
         picking = self.env["stock.picking"].create(
             {
-                "partner_id": self.env.ref("base.res_partner_4").id,
+                "partner_id": partner.id,
                 "picking_type_id": self.env.ref("stock.picking_type_in").id,
                 "location_id": location_id,
                 "location_dest_id": location_dest_id,
@@ -147,10 +154,8 @@ class TestStockProductPack(TransactionCase):
                         0,
                         0,
                         {
-                            "name": "incoming_move_test_01",
                             "product_id": components[0].id,
                             "product_uom_qty": 5,
-                            "product_uom": components[0].uom_id.id,
                             "location_id": location_id,
                             "location_dest_id": location_dest_id,
                         },
@@ -159,10 +164,8 @@ class TestStockProductPack(TransactionCase):
                         0,
                         0,
                         {
-                            "name": "incoming_move_test_02",
                             "product_id": components[1].id,
                             "product_uom_qty": 7,
-                            "product_uom": components[1].uom_id.id,
                             "location_id": location_id,
                             "location_dest_id": location_dest_id,
                         },
@@ -171,10 +174,8 @@ class TestStockProductPack(TransactionCase):
                         0,
                         0,
                         {
-                            "name": "incoming_move_test_03",
                             "product_id": components[3].id,
                             "product_uom_qty": 9,
-                            "product_uom": components[3].uom_id.id,
                             "location_id": location_id,
                             "location_dest_id": location_dest_id,
                         },
@@ -201,7 +202,7 @@ class TestStockProductPack(TransactionCase):
         check that MTO is applied on the moves when the rule is set to 'mts_else_mto'
         """
 
-        def create_orderpoint(product, qty_min, qty_max, location, group):
+        def create_orderpoint(product, qty_min, qty_max, location):
             return self.env["stock.warehouse.orderpoint"].create(
                 {
                     "name": f"OP/{product.name}",
@@ -209,18 +210,18 @@ class TestStockProductPack(TransactionCase):
                     "product_min_qty": qty_min,
                     "product_max_qty": qty_max,
                     "location_id": location.id,
-                    "group_id": group.id,
                 }
             )
 
-        pg = self.env["procurement.group"].create({"name": "Test-product Pack"})
         create_orderpoint(
             self.pack_dc_with_dm,
             10,
             155,
             self.env.ref("stock.stock_location_stock"),
-            pg,
         )
-        picking_ids = self.env["stock.picking"].search([("group_id", "=", pg.id)])
-        # we need to ensure that only the compents of the packs are in the moves.
-        self.assertFalse(self.pack_dc_with_dm in picking_ids.move_ids.product_id)
+        # Check that no moves were created for the pack product itself
+        # Only components should have moves created
+        pack_moves = self.env["stock.move"].search(
+            [("product_id", "=", self.pack_dc_with_dm.id)]
+        )
+        self.assertFalse(pack_moves)

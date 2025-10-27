@@ -3,8 +3,8 @@
 from odoo import api, models
 
 
-class ProcurementGroup(models.Model):
-    _inherit = "procurement.group"
+class StockRule(models.Model):
+    _inherit = "stock.rule"
 
     @api.model
     def run(self, procurements, raise_user_error=True):

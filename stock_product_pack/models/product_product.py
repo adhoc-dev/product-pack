@@ -84,11 +84,11 @@ class ProductProduct(models.Model):
             ProductProduct, self - service_pack_products
         )._compute_quantities()
         res = service_pack_products._compute_quantities_dict(
-            self._context.get("lot_id"),
-            self._context.get("owner_id"),
-            self._context.get("package_id"),
-            self._context.get("from_date"),
-            self._context.get("to_date"),
+            self.env.context.get("lot_id"),
+            self.env.context.get("owner_id"),
+            self.env.context.get("package_id"),
+            self.env.context.get("from_date"),
+            self.env.context.get("to_date"),
         )
         for product in service_pack_products:
             product.qty_available = res[product.id]["qty_available"]

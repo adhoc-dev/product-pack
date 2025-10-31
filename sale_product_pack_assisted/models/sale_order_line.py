@@ -1,6 +1,6 @@
 # Copyright 2019 ADHOC SA - Juan José Scarafía
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 
 
 class SaleOrderLine(models.Model):
@@ -30,7 +30,7 @@ class SaleOrderLine(models.Model):
         self.ensure_one()
         # if we are using update_pricelist or checking out on ecommerce we
         # only want to update prices
-        do_not_expand = self._context.get("update_prices") or self._context.get(
+        do_not_expand = self.env.context.get("update_prices") or self.env.context.get(
             "update_pricelist", False
         )
         if not do_not_expand and self.product_id.pack_type == "non_detailed_assisted":
@@ -57,7 +57,7 @@ class SaleOrderLine(models.Model):
     def action_assisted_pack_detail(self):
         view = self.env.ref("sale_product_pack_assisted.view_order_line_form2")
         return {
-            "name": _("Details"),
+            "name": self.env._("Details"),
             "view_type": "form",
             "view_mode": "form",
             "res_model": "sale.order.line",

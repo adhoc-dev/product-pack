@@ -54,17 +54,63 @@ class SaleOrderLine(models.Model):
                 self.assisted_pack_line_ids.create(vals)
         return super().expand_pack_line(write)
 
-    def action_assisted_pack_detail(self):
-        view = self.env.ref("sale_product_pack_assisted.view_order_line_form2")
-        return {
-            "name": self.env._("Details"),
-            "view_type": "form",
-            "view_mode": "form",
-            "res_model": "sale.order.line",
-            "view_id": view.id,
-            "type": "ir.actions.act_window",
-            "target": "new",
-            "readonly": True,
-            "res_id": self.id,
-            "context": dict(self.env.context, pricelist=self.order_id.pricelist_id.id),
+    def action_transform_pack_to_lines(self):
+        """
+        Transform the assisted pack line into detailed lines:
+        1. Create a section line with the pack product name
+        2. Create individual lines for each component with their qty and discount
+        3. Delete the original pack line
+        """
+        self.ensure_one()
+
+        if self.product_id.pack_type != "non_detailed_assisted":
+            return
+
+        pack_name = self.product_id.display_name
+        pack_sequence = self.sequence
+        order = self.order_id
+
+        section_vals = {
+            "order_id": order.id,
+            "display_type": "line_section",
+            "name": pack_name,
+            "sequence": pack_sequence,
+            "collapse_composition": True,
         }
+        self.env["sale.order.line"].create(section_vals)
+
+        for idx, pack_line in enumerate(self.assisted_pack_line_ids, start=1):
+            component_vals = {
+                "order_id": order.id,
+                "product_id": pack_line.product_id.id,
+                "product_uom_qty": pack_line.product_uom_qty,
+                "price_unit": pack_line.price_unit,
+                "discount": pack_line.discount,
+                "sequence": pack_sequence + idx,
+            }
+            self.env["sale.order.line"].create(component_vals)
+
+        self.unlink()
+        return {"type": "ir.actions.act_window_close"}
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        for line in lines:
+            if (
+                line.product_id.pack_type == "non_detailed_assisted"
+                and line.assisted_pack_line_ids
+            ):
+                line.action_transform_pack_to_lines()
+        return lines
+
+    def write(self, vals):
+        res = super().write(vals)
+        if "product_id" in vals:
+            for line in self:
+                if (
+                    line.product_id.pack_type == "non_detailed_assisted"
+                    and line.assisted_pack_line_ids
+                ):
+                    line.action_transform_pack_to_lines()
+        return res

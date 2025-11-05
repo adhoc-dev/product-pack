@@ -11,8 +11,6 @@
     "depends": ["sale_product_pack"],
     "data": [
         "views/sale_order_line_pack_line_views.xml",
-        "views/sale_order_line_views.xml",
-        "views/sale_order_views.xml",
         "security/ir.model.access.csv",
     ],
     "installable": True,

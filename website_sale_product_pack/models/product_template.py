@@ -8,6 +8,53 @@ from odoo.exceptions import ValidationError
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
+    def _get_combination_info(
+        self,
+        combination=False,
+        product_id=False,
+        add_qty=1,
+        parent_combination=False,
+        only_template=False,
+    ):
+        """Override to ensure pack prices include component prices in website."""
+        # Set context to compute whole pack price for detailed packs
+        if self.pack_ok and self.pack_type == "detailed" and self.pack_component_price == "detailed":
+            return super(ProductTemplate, self.with_context(whole_pack_price=True))._get_combination_info(
+                combination=combination,
+                product_id=product_id,
+                add_qty=add_qty,
+                parent_combination=parent_combination,
+                only_template=only_template,
+            )
+        return super()._get_combination_info(
+            combination=combination,
+            product_id=product_id,
+            add_qty=add_qty,
+            parent_combination=parent_combination,
+            only_template=only_template,
+        )
+
+    def _get_configurator_display_price(
+        self, product_or_template, quantity, date, currency, pricelist, **kwargs
+    ):
+        """Override to ensure pack prices include component prices in configurator."""
+        # Check if this is a pack product with detailed pricing
+        is_pack = (
+            hasattr(product_or_template, 'pack_ok')
+            and product_or_template.pack_ok
+            and product_or_template.pack_type == "detailed"
+            and product_or_template.pack_component_price == "detailed"
+        )
+
+        if is_pack:
+            # Add whole_pack_price context for pack products
+            product_or_template = product_or_template.with_context(
+                whole_pack_price=True)
+
+        return super()._get_configurator_display_price(
+            product_or_template, quantity, date, currency, pricelist, **kwargs
+        )
+
     @api.constrains("is_published")
     def check_website_published(self):
         """For keep the consistent and prevent bugs within the e-commerce,

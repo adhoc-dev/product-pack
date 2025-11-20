@@ -8,21 +8,33 @@ from odoo.exceptions import ValidationError
 class ProductProduct(models.Model):
     _inherit = "product.product"
 
-    def _price_compute(self, price_type, uom=None, currency=None, company=None, date=False):
-        prices = super(ProductProduct, self)._price_compute(price_type, uom, currency, company, date)
+    def _get_combination_info_variant(self, **kwargs):
+        """Override to ensure pack prices include component prices in website."""
+        # Set context to compute whole pack price for detailed packs
+        if self.pack_ok and self.pack_type == "detailed" and self.pack_component_price == "detailed":
+            return super(ProductProduct, self.with_context(whole_pack_price=True))._get_combination_info_variant(**kwargs)
+        return super()._get_combination_info_variant(**kwargs)
 
-        return prices
+    def _get_configurator_display_price(
+        self, product_or_template, quantity, date, currency, pricelist, **kwargs
+    ):
+        """Override to ensure pack prices include component prices in configurator."""
+        # Check if this is a pack product with detailed pricing
+        is_pack = (
+            hasattr(product_or_template, 'pack_ok')
+            and product_or_template.pack_ok
+            and product_or_template.pack_type == "detailed"
+            and product_or_template.pack_component_price == "detailed"
+        )
 
-        for product_id in prices:
-            product = self.browse(product_id)
-            if product.pack_ok and product.pack_type == 'detailed' and product.pack_component_price == 'detailed':
-                pack_price = 0.00
-                for component in product.pack_line_ids:
-                    pack_price += component.product_id._price_compute(price_type=price_type, uom=component.product_id.uom_id, currency=currency, company=company, date=date).get(component.product_id.id, 0) * component.quantity
+        if is_pack:
+            # Add whole_pack_price context for pack products
+            product_or_template = product_or_template.with_context(
+                whole_pack_price=True)
 
-                prices[product.id] = pack_price
-
-        return prices
+        return super()._get_configurator_display_price(
+            product_or_template, quantity, date, currency, pricelist, **kwargs
+        )
 
     @api.constrains("pack_line_ids")
     def check_website_published(self):

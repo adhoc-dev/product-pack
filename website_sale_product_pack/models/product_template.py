@@ -79,13 +79,14 @@ class ProductTemplate(models.Model):
         if product_or_template.pack_ok:
             currency = website.currency_id
             pricelist = website.pricelist_id
-            res["price"] = pricelist.with_context(
+            pack_price, _ = pricelist.with_context(
                 whole_pack_price=True
-            )._get_product_price(
+            )._get_product_price_rule(
                 product=product_or_template,
                 quantity=quantity,
-                currency=currency,
+                target_currency=currency,
             )
+            res["price"] = pack_price
             # Apply taxes
             fiscal_position = website.fiscal_position_id.sudo()
             product_taxes = (
@@ -114,11 +115,14 @@ class ProductTemplate(models.Model):
         if packs:
             pricelist = website.pricelist_id
             for pack in packs:
-                price = {
-                    "price_reduce": pricelist.with_context(
-                        whole_pack_price=True
-                    )._get_product_price(product=pack, quantity=1.0)
-                }
+                pack_price, _ = pricelist.with_context(
+                    whole_pack_price=True
+                )._get_product_price_rule(
+                    product=pack,
+                    quantity=1.0,
+                    target_currency=website.currency_id,
+                )
+                price = {"price_reduce": pack_price}
                 # Apply taxes
                 fiscal_position = website.fiscal_position_id.sudo()
                 product_taxes = pack.sudo().taxes_id._filter_taxes_by_company(

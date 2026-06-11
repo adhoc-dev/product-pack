@@ -131,6 +131,52 @@ class TestStockProductPack(BaseCommon):
         self.assertEqual(self.pack_dc.virtual_available, 5)
         self.assertEqual(self.pack_dc.qty_available, 5)
 
+    def _create_stock_quant(self, product, qty):
+        self.env["stock.quant"].create(
+            {
+                "product_id": product.id,
+                "location_id": self.warehouse.lot_stock_id.id,
+                "quantity": qty,
+            }
+        )
+
+    def test_picking_pack_consu(self):
+        # Simulate the out picking that would be generated
+        self.pack_dc.pack_type = "detailed"
+        self.component_1.is_storable = True
+        self.component_2.is_storable = True
+        self.component_3.is_storable = True
+        self.component_4.is_storable = True
+        self._create_stock_quant(self.component_1, 1)
+        self._create_stock_quant(self.component_2, 1)
+        self._create_stock_quant(self.component_3, 1)
+        self._create_stock_quant(self.component_4, 1)
+        moves_data = [
+            (self.pack_dc, 1),
+            (self.component_1, 1),
+            (self.component_2, 1),
+            (self.component_3, 1),
+            (self.component_4, 1),
+        ]
+        picking = self._create_picking(self.warehouse.out_type_id.id, moves_data)
+        picking.action_confirm()
+        picking.button_validate()
+        self.assertEqual(picking.state, "done")
+        data_names = []
+        aggregated_lines = picking.move_line_ids._get_aggregated_product_quantities()
+        for line in aggregated_lines:
+            data_names.append(aggregated_lines[line]["name"])
+        self.assertEqual(
+            data_names,
+            [
+                "Pack",
+                "Component 1",
+                "Component 2",
+                "Component 3",
+                "Component 4",
+            ],
+        )
+
     def test_pack_with_dont_move_the_parent(self):
         """Run a procurement for prod pack products when there are only 5 in stock then
         check that MTO is applied on the moves when the rule is set to 'mts_else_mto'

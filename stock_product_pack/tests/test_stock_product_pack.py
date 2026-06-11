@@ -84,7 +84,7 @@ class TestStockProductPack(TransactionCase):
             }
         )
         warehouse = cls.env["stock.warehouse"].search(
-            [("company_id", "=", cls.env.user.id)], limit=1
+            [("company_id", "=", cls.env.company.id)], limit=1
         )
         cls.stock_rule = cls.stock_rule_obj.create(
             {

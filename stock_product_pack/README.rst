@@ -1,7 +1,3 @@
-.. image:: https://odoo-community.org/readme-banner-image
-   :target: https://odoo-community.org/get-involved?utm_source=readme
-   :alt: Odoo Community Association
-
 ==================
 Stock product Pack
 ==================
@@ -17,7 +13,7 @@ Stock product Pack
 .. |badge1| image:: https://img.shields.io/badge/maturity-Beta-yellow.png
     :target: https://odoo-community.org/page/development-status
     :alt: Beta
-.. |badge2| image:: https://img.shields.io/badge/license-AGPL--3-blue.png
+.. |badge2| image:: https://img.shields.io/badge/licence-AGPL--3-blue.png
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-OCA%2Fproduct--pack-lightgray.png?logo=github
@@ -79,16 +75,16 @@ Authors
 Contributors
 ------------
 
-- `Tecnativa <https://www.tecnativa.com>`__:
+-  `Tecnativa <https://www.tecnativa.com>`__:
 
-  - Ernesto Tejeda
-  - Pedro M. Baeza
-  - Sergio Teruel
-  - João Marques
+   -  Ernesto Tejeda
+   -  Pedro M. Baeza
+   -  Sergio Teruel
+   -  João Marques
 
-- `ADHOC SA <https://www.adhoc.com.ar>`__:
+-  `ADHOC SA <https://www.adhoc.com.ar>`__:
 
-  - Bruno Zanotti
+   -  Bruno Zanotti
 
 Maintainers
 -----------
@@ -103,13 +99,13 @@ OCA, or the Odoo Community Association, is a nonprofit organization whose
 mission is to support the collaborative development of Odoo features and
 promote its widespread use.
 
-.. |maintainer-ernestotejeda| image:: https://github.com/ernestotejeda.png?size=40px
-    :target: https://github.com/ernestotejeda
-    :alt: ernestotejeda
+.. |maintainer-victoralmau| image:: https://github.com/victoralmau.png?size=40px
+    :target: https://github.com/victoralmau
+    :alt: victoralmau
 
 Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
 
-|maintainer-ernestotejeda| 
+|maintainer-victoralmau| 
 
 This module is part of the `OCA/product-pack <https://github.com/OCA/product-pack/tree/18.0/stock_product_pack>`_ project on GitHub.
 

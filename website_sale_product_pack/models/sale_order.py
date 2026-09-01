@@ -36,7 +36,11 @@ class SaleOrder(models.Model):
             else None
         )
         website = self.website_id
-        if product and product.product_tmpl_id.pack_ok and website.prevent_zero_price_sale:
+        if (
+            product
+            and product.product_tmpl_id.pack_ok
+            and website.prevent_zero_price_sale
+        ):
             # Temporarily suppress the zero-price sale guard in the ORM cache so
             # that the check inside super()._cart_update() sees False without
             # writing to the database.  The cache is invalidated in the finally

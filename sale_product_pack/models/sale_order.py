@@ -25,8 +25,10 @@ class SaleOrder(models.Model):
         removed_line_ids = list(set(origin_line_ids) - set(line_ids))
         removed_line = self.env["sale.order.line"].browse(removed_line_ids)
         if removed_line.filtered(
-            lambda x: x.pack_parent_line_id
-            and not x.pack_parent_line_id.product_id.pack_modifiable
+            lambda x: (
+                x.pack_parent_line_id
+                and not x.pack_parent_line_id.product_id.pack_modifiable
+            )
         ):
             raise UserError(
                 self.env._(
@@ -76,6 +78,8 @@ class SaleOrder(models.Model):
     def _get_update_prices_lines(self):
         res = super()._get_update_prices_lines()
         return res.filtered(
-            lambda line: not line.pack_parent_line_id
-            or line.pack_parent_line_id.pack_component_price == "detailed"
+            lambda line: (
+                not line.pack_parent_line_id
+                or line.pack_parent_line_id.pack_component_price == "detailed"
+            )
         )

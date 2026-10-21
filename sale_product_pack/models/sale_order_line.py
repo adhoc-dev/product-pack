@@ -181,10 +181,12 @@ class SaleOrderLine(models.Model):
         # handled by the parent pack line, as some enterprise modules may trigger
         # price recomputation and override their expected zero price.
         lines_to_recompute = self.filtered(
-            lambda line: not (
-                line.pack_parent_line_id
-                and line.pack_parent_line_id.product_id.pack_component_price
-                in ("totalized", "ignored")
+            lambda line: (
+                not (
+                    line.pack_parent_line_id
+                    and line.pack_parent_line_id.product_id.pack_component_price
+                    in ("totalized", "ignored")
+                )
             )
         )
         return super(SaleOrderLine, lines_to_recompute)._compute_price_unit()

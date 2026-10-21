@@ -27,8 +27,8 @@
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
             <xpath
-                expr="//field[@name='order_line']/list//field[@name='price_subtotal']"
-                position="after"
+                expr="//field[@name='order_line']/list//widget[@name='section_state']"
+                position="before"
             >
                 <field name="pack_modifiable" column_invisible="True" />
                 <field name="pack_parent_line_id" column_invisible="True" />
@@ -37,7 +37,7 @@
                     name="action_open_parent_pack_product_view"
                     type="object"
                     invisible="not pack_parent_line_id or pack_modifiable"
-                    icon="fa-lock"
+                    icon="lock"
                 />
             </xpath>
         </field>

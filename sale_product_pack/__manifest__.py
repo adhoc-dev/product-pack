@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Sale Product Pack",
-    "version": "19.0.1.0.3",
+    "version": "20.0.1.0.0",
     "category": "Sales",
     "summary": "This module allows you to sell product packs",
     "website": "https://github.com/OCA/product-pack",
@@ -10,7 +10,10 @@
     "maintainers": ["victoralmau"],
     "license": "AGPL-3",
     "depends": ["product_pack", "sale"],
-    "data": ["security/ir.model.access.csv", "views/product_pack_line_views.xml"],
+    "data": [
+        "security/ir.access.csv",
+        "views/product_pack_line_views.xml",
+    ],
     "demo": [
         "demo/product_pack_line_demo.xml",
         "demo/sale_pack_demo.xml",

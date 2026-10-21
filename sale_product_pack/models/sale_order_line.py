@@ -79,7 +79,10 @@ class SaleOrderLine(models.Model):
         """Only when strictly necessary (a product is a pack) will be created line
         by line, this is necessary to maintain the correct order.
         """
-        product_ids = [elem.get("product_id") for elem in vals_list]
+        # since 20.0 browse() rejects falsy ids: a section line has no product
+        product_ids = [
+            elem["product_id"] for elem in vals_list if elem.get("product_id")
+        ]
         products = self.env["product.product"].browse(product_ids)
         if any(p.pack_ok and p.pack_type != "non_detailed" for p in products):
             res = self.browse()
@@ -107,6 +110,7 @@ class SaleOrderLine(models.Model):
         "price_unit",
         "discount",
         "name",
+        "label",
         "tax_ids",
     )
     def check_pack_line_modify(self):
@@ -168,12 +172,15 @@ class SaleOrderLine(models.Model):
             pack_line.discount = pack_line._get_pack_line_discount()
         return res
 
-    def _compute_name(self):
-        res = super()._compute_name()
+    @api.depends("pack_parent_line_id.pack_depth", "pack_parent_line_id.product_id")
+    def _compute_label(self):
+        # since 20.0 the order line shows `label`, not `name`: the indentation
+        # of the components has to go there to stay visible
+        res = super()._compute_label()
         for line in self:
             parent = line.pack_parent_line_id
             if parent.product_id.pack_ok and parent.pack_type == "detailed":
-                line.name = f"{'> ' * (parent.pack_depth + 1)}{line.name}"
+                line.label = f"{'> ' * (parent.pack_depth + 1)}{line.label}"
         return res
 
     def _compute_price_unit(self):

@@ -7,6 +7,11 @@ from odoo.addons.product_pack.tests.common import ProductPackCommon
 
 
 class TestSaleProductPackBase(ProductPackCommon):
+    # Odoo 20 runs each test as _test_user: selling a pack needs the sale side too
+    _test_user_groups = ProductPackCommon._test_user_groups + (
+        "sales_team.group_sale_manager",
+    )
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -18,7 +23,7 @@ class TestSaleProductPackBase(ProductPackCommon):
                     Command.create(
                         {
                             "applied_on": "3_global",
-                            "compute_price": "formula",
+                            "compute_price": "discount",
                             "base": "list_price",
                         },
                     )
@@ -33,8 +38,8 @@ class TestSaleProductPackBase(ProductPackCommon):
                     Command.create(
                         {
                             "applied_on": "3_global",
-                            "compute_price": "percentage",
-                            "percent_price": 10,
+                            "compute_price": "discount",
+                            "price_discount": 10,
                         },
                     )
                 ],

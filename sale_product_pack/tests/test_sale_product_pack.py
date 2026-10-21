@@ -7,8 +7,10 @@ from .common import TestSaleProductPackBase
 
 class TestSaleProductPack(TestSaleProductPackBase):
     def test_create_components_price_order_line(self):
+        # since 20.0 the discount feature is read off the superuser, not the
+        # current user, and each test runs as its own user
         group_discount = self.env.ref("sale.group_discount_per_so_line")
-        self.env.user.write({"group_ids": [(4, group_discount.id)]})
+        self.env.ref("base.group_user")._apply_group(group_discount)
         self._add_so_line()
         # After create, there will be four lines
         self.assertEqual(len(self.sale_order.order_line), 3)
@@ -26,7 +28,7 @@ class TestSaleProductPack(TestSaleProductPackBase):
         self.assertEqual(self.sale_order.order_line[2].price_subtotal, 30)
         # Update pricelist with a discount
         self.sale_order.pricelist_id = self.discount_pricelist
-        self.sale_order.action_update_prices()
+        self.sale_order._recompute_prices()
         self.assertEqual(self.sale_order.order_line[0].discount, 10)
         self.assertEqual(self.sale_order.order_line[0].price_subtotal, 9)
         self.assertEqual(self.sale_order.order_line[1].discount, 10)
@@ -51,7 +53,7 @@ class TestSaleProductPack(TestSaleProductPackBase):
         self.assertEqual(self.sale_order.order_line[0].price_subtotal, 10)
         # Update pricelist with a discount
         self.sale_order.pricelist_id = self.discount_pricelist
-        self.sale_order.action_update_prices()
+        self.sale_order._recompute_prices()
         self.assertEqual(self.sale_order.order_line[0].price_subtotal, 9)
         self.assertEqual(self.sale_order.order_line[1].price_subtotal, 0)
         self.assertEqual(self.sale_order.order_line[2].price_subtotal, 0)
@@ -73,7 +75,7 @@ class TestSaleProductPack(TestSaleProductPackBase):
         self.assertEqual(self.sale_order.order_line[0].price_subtotal, 70)
         # Update pricelist with a discount
         self.sale_order.pricelist_id = self.discount_pricelist
-        self.sale_order.action_update_prices()
+        self.sale_order._recompute_prices()
         self.assertEqual(self.sale_order.order_line[0].price_subtotal, 63)
         self.assertEqual(self.sale_order.order_line[1].price_subtotal, 0)
         self.assertEqual(self.sale_order.order_line[2].price_subtotal, 0)
@@ -88,7 +90,7 @@ class TestSaleProductPack(TestSaleProductPackBase):
         self.assertEqual(self.sale_order.order_line.price_subtotal, 70)
         # Update pricelist with a discount
         self.sale_order.pricelist_id = self.discount_pricelist
-        self.sale_order.action_update_prices()
+        self.sale_order._recompute_prices()
         self.assertEqual(self.sale_order.order_line.price_subtotal, 63)
 
     def test_update_qty(self):

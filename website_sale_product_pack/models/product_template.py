@@ -4,6 +4,7 @@
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.http import request
+from odoo.tools import float_is_zero
 
 
 class ProductTemplate(models.Model):
@@ -107,8 +108,19 @@ class ProductTemplate(models.Model):
                 )
             else:
                 res["price"] = pricelist_price
+            # The core flags the pack with the price of its main product.
+            res["prevent_zero_price_sale"] = (
+                website.prevent_zero_price_sale
+                and float_is_zero(res["price"], precision_rounding=currency.rounding)
+            )
 
         return res
+
+    def _website_show_quick_add(self):
+        """Judge a pack by its whole price, not by the one of its main product"""
+        return super(
+            ProductTemplate, self.with_context(whole_pack_price=True)
+        )._website_show_quick_add()
 
     def _get_sales_prices(self, website):
         """Override to add the price of the pack itself"""

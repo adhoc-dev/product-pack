@@ -24,8 +24,11 @@ class StockMoveLine(models.Model):
         This is a known side effect in the stock addon when using consumable product +
         storable products but for now we only reorder for product packs.
         """
+        move_lines = self
         if any(
             sml.product_id.pack_ok and sml.product_id.type == "consu" for sml in self
         ):
-            self = self.move_id.sorted().move_line_ids
-        return super()._get_aggregated_product_quantities(**kwargs)
+            move_lines = self.move_id.sorted().move_line_ids
+        return super(StockMoveLine, move_lines)._get_aggregated_product_quantities(
+            **kwargs
+        )

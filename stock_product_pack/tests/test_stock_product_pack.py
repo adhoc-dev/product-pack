@@ -10,6 +10,10 @@ from odoo.addons.base.tests.common import BaseCommon
 
 @tagged("post_install", "-at_install")
 class TestStockProductPack(BaseCommon):
+    # Odoo 20 runs each test as _test_user: these groups are the ones the
+    # module's own access rules rely on.
+    _test_user_groups = ("stock.group_stock_manager", "product.group_product_manager")
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

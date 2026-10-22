@@ -24,3 +24,15 @@ class ProductProduct(models.Model):
                         pack_name=rec.name,
                     )
                 )
+
+    def _website_show_quick_add(self):
+        """Judge a pack by its whole price, not by the one of its main product"""
+        return super(
+            ProductProduct, self.with_context(whole_pack_price=True)
+        )._website_show_quick_add()
+
+    def _is_add_to_cart_allowed(self):
+        """Judge a pack by its whole price, not by the one of its main product"""
+        return super(
+            ProductProduct, self.with_context(whole_pack_price=True)
+        )._is_add_to_cart_allowed()

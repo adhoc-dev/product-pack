@@ -1,6 +1,6 @@
 # Copyright 2021 Tecnativa - David Vidal
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests.common import HttpCase, tagged
 
 from odoo.addons.website_sale.tests.common import MockRequest
@@ -331,6 +331,63 @@ class WebsiteSaleHttpCase(HttpCase):
             combination_info = pack._get_combination_info(only_template=True)
         self.assertEqual(prices[pack.id]["price_reduce"], 500.0)
         self.assertEqual(combination_info["price"], 500.0)
+
+    def test_prevent_zero_price_sale_judges_whole_pack(self):
+        """With the zero price sale prevention on, a pack whose main product is
+        at 0 can be sold as long as the whole pack has a price."""
+        website = self.env["website"].get_current_website()
+        website.prevent_zero_price_sale = True
+        website = website.with_user(self.user_portal)
+        with MockRequest(website.env, website=website):
+            for pack in self.packs.with_user(self.user_portal):
+                combination_info = pack._get_combination_info(only_template=True)
+                self.assertFalse(combination_info["prevent_zero_price_sale"], pack.name)
+                variant = pack.product_variant_id
+                self.assertTrue(variant._website_show_quick_add(), pack.name)
+                self.assertTrue(variant._is_add_to_cart_allowed(), pack.name)
+        for pack in self.packs:
+            order = self.env["sale.order"].create(
+                {
+                    "partner_id": self.user_portal.partner_id.id,
+                    "website_id": website.id,
+                }
+            )
+            with MockRequest(self.env, website=website, sale_order_id=order.id):
+                order._cart_add(product_id=pack.product_variant_id.id, quantity=1)
+            self.assertTrue(order._is_cart_ready(), pack.name)
+
+    def test_prevent_zero_price_sale_zero_priced_pack(self):
+        """A pack whose whole price is 0 is still blocked."""
+        website = self.env["website"].get_current_website()
+        website.prevent_zero_price_sale = True
+        component = self.env["product.product"].create(
+            {"name": "Free component", "list_price": 0.0, "is_published": True}
+        )
+        pack = self.env["product.template"].create(
+            {
+                "name": "Pack without price",
+                "list_price": 0.0,
+                "pack_ok": True,
+                "pack_type": "detailed",
+                "pack_component_price": "totalized",
+                "is_published": True,
+            }
+        )
+        self.env["product.pack.line"].create(
+            {
+                "parent_product_id": pack.product_variant_id.id,
+                "product_id": component.id,
+                "quantity": 1,
+            }
+        )
+        order = self.env["sale.order"].create(
+            {"partner_id": self.user_portal.partner_id.id, "website_id": website.id}
+        )
+        with MockRequest(self.env, website=website, sale_order_id=order.id):
+            combination_info = pack._get_combination_info(only_template=True)
+            self.assertTrue(combination_info["prevent_zero_price_sale"])
+            with self.assertRaises(UserError):
+                order._cart_add(product_id=pack.product_variant_id.id, quantity=1)
 
     def test__check_to_add_pack_component_pusblished(self):
         """

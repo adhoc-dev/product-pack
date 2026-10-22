@@ -55,6 +55,20 @@ class SaleOrder(models.Model):
             )
         return res
 
+    def _cart_accessories(self):
+        """Judge the suggested packs by their whole price"""
+        return super(
+            SaleOrder, self.with_context(whole_pack_price=True)
+        )._cart_accessories()
+
+    def _get_zero_priced_lines(self):
+        """The lines of a pack are zero priced only when the whole pack is. Its
+        components go at 0 on purpose when the main line holds the price."""
+        lines = super()._get_zero_priced_lines()
+        return lines.filtered(
+            lambda line: not line._get_pack_root_line() or line._is_pack_zero_priced()
+        )
+
 
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
@@ -64,3 +78,37 @@ class SaleOrderLine(models.Model):
         the children lines so the user doesn't have to"""
         join_pack_children = self + self.mapped("pack_child_line_ids")
         return super(SaleOrderLine, join_pack_children.exists()).unlink()
+
+    def _get_pack_root_line(self):
+        """Return the top pack line this line belongs to, or an empty
+        recordset when the line is not part of a pack"""
+        self.ensure_one()
+        if not (self.pack_parent_line_id or self.pack_child_line_ids):
+            return self.browse()
+        line = self
+        while line.pack_parent_line_id:
+            line = line.pack_parent_line_id
+        return line
+
+    def _get_pack_lines(self):
+        """Return all the lines of the pack of this line, at any depth"""
+        lines = children = self._get_pack_root_line()
+        while children:
+            children = children.pack_child_line_ids
+            lines |= children
+        return lines
+
+    def _is_pack_zero_priced(self):
+        """Whether the whole pack of this line has no price"""
+        return not any(self._get_pack_lines().mapped("price_unit"))
+
+    def _get_lines_with_price(self):
+        if self.env.context.get("whole_pack_lines") and self._get_pack_root_line():
+            return self._get_pack_lines()
+        return super()._get_lines_with_price()
+
+    def _check_validity(self):
+        """Check the price of the whole pack, as the core does with combos"""
+        return super(
+            SaleOrderLine, self.with_context(whole_pack_lines=True)
+        )._check_validity()

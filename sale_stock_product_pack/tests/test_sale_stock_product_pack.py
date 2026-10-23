@@ -6,6 +6,11 @@ from odoo.addons.sale_product_pack.tests.common import TestSaleProductPackBase
 
 
 class TestSaleStockProductPack(TestSaleProductPackBase):
+    # Odoo 20 runs each test as _test_user: delivering a pack needs the stock side too
+    _test_user_groups = TestSaleProductPackBase._test_user_groups + (
+        "stock.group_stock_user",
+    )
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -43,7 +48,7 @@ class TestSaleStockProductPack(TestSaleProductPackBase):
 
     def _get_aggregated_product_quantities(self, sol):
         sol_data = sol.move_ids.move_line_ids._get_aggregated_product_quantities()
-        key_0 = list(sol_data.keys())[0]
+        key_0 = next(iter(sol_data.keys()))
         return sol_data[key_0]
 
     def test_picking_pack_consu_01(self):

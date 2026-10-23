@@ -181,7 +181,8 @@ class WebsiteSaleHttpCase(HttpCase):
         )
 
         # Create and select a specific pricelist
-        website = cls.env["website"].get_current_website()
+        cls.website = cls.env.company.website_id or cls.env.ref("base.default_website")
+        website = cls.website
         pricelist = cls.env["product.pricelist"].create(
             {
                 "name": "website_sale_product_pack public",
@@ -324,24 +325,32 @@ class WebsiteSaleHttpCase(HttpCase):
                 "quantity": 2,
             }
         )
-        website = self.env["website"].get_current_website()
+        website = self.website
         with MockRequest(self.env, website=website) as request:
             self.assertFalse(request.pricelist.item_ids)
-            prices = pack._get_sales_prices(website)
+            pack = pack.with_env(request.env)
+            prices = pack._get_sales_prices(
+                request.pricelist, request.fiscal_position, website
+            )
             combination_info = pack._get_combination_info(only_template=True)
         self.assertEqual(prices[pack.id]["price_reduce"], 500.0)
+        # l10n_ar_website_sale reads it to show the price without taxes
+        self.assertEqual(prices[pack.id]["raw_pricelist_price"], 500.0)
         self.assertEqual(combination_info["price"], 500.0)
 
     def test_prevent_zero_price_sale_judges_whole_pack(self):
         """With the zero price sale prevention on, a pack whose main product is
         at 0 can be sold as long as the whole pack has a price."""
-        website = self.env["website"].get_current_website()
-        website.prevent_zero_price_sale = True
+        website = self.website
+        website.write({"prevent_sale": True, "prevent_sale_for": "zero_price"})
         website = website.with_user(self.user_portal)
         with MockRequest(website.env, website=website):
-            for pack in self.packs.with_user(self.user_portal):
+            packs = self.packs.with_user(self.user_portal).with_context(
+                website_id=website.id
+            )
+            for pack in packs:
                 combination_info = pack._get_combination_info(only_template=True)
-                self.assertFalse(combination_info["prevent_zero_price_sale"], pack.name)
+                self.assertFalse(combination_info["prevent_sale"], pack.name)
                 variant = pack.product_variant_id
                 self.assertTrue(variant._website_show_quick_add(), pack.name)
                 self.assertTrue(variant._is_add_to_cart_allowed(), pack.name)
@@ -354,12 +363,12 @@ class WebsiteSaleHttpCase(HttpCase):
             )
             with MockRequest(self.env, website=website, sale_order_id=order.id):
                 order._cart_add(product_id=pack.product_variant_id.id, quantity=1)
-            self.assertTrue(order._is_cart_ready(), pack.name)
+            self.assertFalse(order._get_prevented_sale_lines(), pack.name)
 
     def test_prevent_zero_price_sale_zero_priced_pack(self):
         """A pack whose whole price is 0 is still blocked."""
-        website = self.env["website"].get_current_website()
-        website.prevent_zero_price_sale = True
+        website = self.website
+        website.write({"prevent_sale": True, "prevent_sale_for": "zero_price"})
         component = self.env["product.product"].create(
             {"name": "Free component", "list_price": 0.0, "is_published": True}
         )
@@ -384,10 +393,28 @@ class WebsiteSaleHttpCase(HttpCase):
             {"partner_id": self.user_portal.partner_id.id, "website_id": website.id}
         )
         with MockRequest(self.env, website=website, sale_order_id=order.id):
-            combination_info = pack._get_combination_info(only_template=True)
-            self.assertTrue(combination_info["prevent_zero_price_sale"])
+            combination_info = pack.with_context(
+                website_id=website.id
+            )._get_combination_info(only_template=True)
+            self.assertTrue(combination_info["prevent_sale"])
             with self.assertRaises(UserError):
                 order._cart_add(product_id=pack.product_variant_id.id, quantity=1)
+
+    def test_cart_hides_the_unit_price_when_the_website_does_not_ask_for_it(self):
+        """The block with the price per unit of a cart line follows the setting
+        of the website, as it does for a line that is not part of a pack."""
+        self.assertFalse(self.website.show_product_reference_price)
+        self.authenticate("portal_test", "portal_test")
+        self.make_jsonrpc_request(
+            "/shop/cart/add",
+            {
+                "product_template_id": self.product_pdc.id,
+                "product_id": self.product_pdc.product_variant_id.id,
+                "quantity": 1,
+            },
+        )
+        cart = self.url_open("/shop/cart").text
+        self.assertNotIn("cart_product_base_unit_price", cart)
 
     def test__check_to_add_pack_component_pusblished(self):
         """

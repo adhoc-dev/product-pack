@@ -61,14 +61,6 @@ class SaleOrder(models.Model):
             SaleOrder, self.with_context(whole_pack_price=True)
         )._cart_accessories()
 
-    def _get_zero_priced_lines(self):
-        """The lines of a pack are zero priced only when the whole pack is. Its
-        components go at 0 on purpose when the main line holds the price."""
-        lines = super()._get_zero_priced_lines()
-        return lines.filtered(
-            lambda line: not line._get_pack_root_line() or line._is_pack_zero_priced()
-        )
-
 
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
@@ -97,10 +89,6 @@ class SaleOrderLine(models.Model):
             children = children.pack_child_line_ids
             lines |= children
         return lines
-
-    def _is_pack_zero_priced(self):
-        """Whether the whole pack of this line has no price"""
-        return not any(self._get_pack_lines().mapped("price_unit"))
 
     def _get_lines_with_price(self):
         if self.env.context.get("whole_pack_lines") and self._get_pack_root_line():

@@ -1,10 +1,8 @@
 # Copyright 2019 Tecnativa - Ernesto Tejeda
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from odoo import api, fields, models
+from odoo import api, models
 from odoo.exceptions import ValidationError
-from odoo.http import request
-from odoo.tools import float_is_zero
 
 
 class ProductTemplate(models.Model):
@@ -54,6 +52,8 @@ class ProductTemplate(models.Model):
         add_qty=1.0,
         uom_id=False,
         only_template=False,
+        pricelist=None,
+        fiscal_position=None,
     ):
         """Override to add the information about packs with whole_pack_price context"""
         return super(
@@ -64,18 +64,32 @@ class ProductTemplate(models.Model):
             add_qty=add_qty,
             uom_id=uom_id,
             only_template=only_template,
+            pricelist=pricelist,
+            fiscal_position=fiscal_position,
         )
 
-    def _get_additionnal_combination_info(
-        self, product_or_template, quantity, uom, date, website
+    def _get_additional_combination_info(
+        self,
+        product_or_template,
+        quantity,
+        uom,
+        website,
+        pricelist,
+        fiscal_position,
+        **kwargs,
     ):
         """Override to add the information about packs with whole_pack_price context"""
-        res = super()._get_additionnal_combination_info(
-            product_or_template, quantity, uom, date, website
+        res = super()._get_additional_combination_info(
+            product_or_template,
+            quantity,
+            uom,
+            website,
+            pricelist,
+            fiscal_position,
+            **kwargs,
         )
 
         if product_or_template.pack_ok:
-            pricelist = request.pricelist
             currency = website.currency_id
             # _get_product_price is the one product_pack overrides to add up the
             # components; _get_product_price_rule goes straight to the core.
@@ -85,7 +99,6 @@ class ProductTemplate(models.Model):
                 product_or_template,
                 quantity,
                 uom=uom,
-                date=date,
                 currency=currency,
             )
 
@@ -97,51 +110,49 @@ class ProductTemplate(models.Model):
             )
             taxes = self.env["account.tax"]
             if product_taxes:
-                taxes = request.fiscal_position.map_tax(product_taxes)
-                res["price"] = self._apply_taxes_to_price(
+                taxes = fiscal_position.map_tax(product_taxes)
+                res["price"] = product_or_template._apply_taxes_to_price(
                     pricelist_price,
                     currency,
-                    product_taxes,
-                    taxes,
-                    product_or_template,
+                    product_taxes=product_taxes,
+                    taxes=taxes,
                     website=website,
                 )
             else:
                 res["price"] = pricelist_price
             # The core flags the pack with the price of its main product.
-            res["prevent_zero_price_sale"] = (
-                website.prevent_zero_price_sale
-                and float_is_zero(res["price"], precision_rounding=currency.rounding)
+            is_zero_price = currency.is_zero(res["price"])
+            res["prevent_sale"] = website._prevent_product_sale(
+                product_or_template, is_zero_price
             )
+            res["hide_price"] = res["prevent_sale"] and is_zero_price
 
         return res
 
-    def _website_show_quick_add(self):
+    def _website_show_quick_add(self, product=None):
         """Judge a pack by its whole price, not by the one of its main product"""
         return super(
             ProductTemplate, self.with_context(whole_pack_price=True)
-        )._website_show_quick_add()
+        )._website_show_quick_add(product=product)
 
-    def _get_sales_prices(self, website):
+    def _get_sales_prices(self, pricelist_sudo, fiscal_position_sudo, website):
         """Override to add the price of the pack itself"""
         packs, no_packs = self.with_context(whole_pack_price=True).split_pack_products()
-        prices = super(ProductTemplate, no_packs)._get_sales_prices(website)
+        prices = super(ProductTemplate, no_packs)._get_sales_prices(
+            pricelist_sudo, fiscal_position_sudo, website
+        )
         if packs:
-            pricelist = request.pricelist
             currency = website.currency_id
-            fiscal_position_sudo = request.fiscal_position
-            date = fields.Date.context_today(self)
 
             for pack in packs:
                 # _get_product_price is the one product_pack overrides to add up the
                 # components; _get_product_price_rule goes straight to the core.
-                pricelist_price = pricelist.with_context(
+                pricelist_price = pricelist_sudo.with_context(
                     whole_pack_price=True
                 )._get_product_price(
                     pack,
                     1.0,
                     uom=pack.uom_id,
-                    date=date,
                     currency=currency,
                 )
 
@@ -152,16 +163,19 @@ class ProductTemplate(models.Model):
                 taxes = self.env["account.tax"]
                 if product_taxes:
                     taxes = fiscal_position_sudo.map_tax(product_taxes)
-                    price_reduce = self._apply_taxes_to_price(
+                    price_reduce = pack._apply_taxes_to_price(
                         pricelist_price,
                         currency,
-                        product_taxes,
-                        taxes,
-                        pack,
+                        product_taxes=product_taxes,
+                        taxes=taxes,
                         website=website,
                     )
                 else:
                     price_reduce = pricelist_price
 
-                prices[pack.id] = {"price_reduce": price_reduce}
+                # raw_pricelist_price is read by l10n_ar_website_sale since 20.0.
+                prices[pack.id] = {
+                    "raw_pricelist_price": pricelist_price,
+                    "price_reduce": price_reduce,
+                }
         return prices

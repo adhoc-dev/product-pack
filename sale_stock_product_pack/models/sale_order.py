@@ -15,9 +15,11 @@ class SaleOrderLine(models.Model):
             "pack_parent_line_id"
         )
         for line in main_pack_lines.filtered(
-            lambda x: x.qty_delivered_method == "stock_move"
-            and x.pack_child_line_ids
-            and x.product_uom_qty
+            lambda x: (
+                x.qty_delivered_method == "stock_move"
+                and x.pack_child_line_ids
+                and x.product_uom_qty
+            )
         ):
             delivered_packs = []
             # We filter non qty lines of editable packs

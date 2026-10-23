@@ -93,12 +93,14 @@ class TestSaleStockProductPack(TestSaleProductPackBase):
         self._create_stock_quant(self.component2, 12)
         self.sale_order.action_confirm()
         sol_pack_component1 = self.sale_order.order_line.filtered(
-            lambda x: x.pack_parent_line_id == sol_pack
-            and x.product_id == self.component1
+            lambda x: (
+                x.pack_parent_line_id == sol_pack and x.product_id == self.component1
+            )
         )
         sol_pack_component2 = self.sale_order.order_line.filtered(
-            lambda x: x.pack_parent_line_id == sol_pack
-            and x.product_id == self.component2
+            lambda x: (
+                x.pack_parent_line_id == sol_pack and x.product_id == self.component2
+            )
         )
         picking = self.sale_order.picking_ids
         picking.button_validate()

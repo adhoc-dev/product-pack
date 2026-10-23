@@ -389,6 +389,48 @@ class WebsiteSaleHttpCase(HttpCase):
             with self.assertRaises(UserError):
                 order._cart_add(product_id=pack.product_variant_id.id, quantity=1)
 
+    def test_cart_notification_shows_the_whole_pack_price(self):
+        """The notification of a pack whose components carry the price
+        announces the price of the whole pack, not the zero of its main line."""
+        component = self.env["product.product"].create(
+            {
+                "name": "Component of the notification pack",
+                "list_price": 120.0,
+                "is_published": True,
+                "taxes_id": False,
+            }
+        )
+        pack = self.env["product.template"].create(
+            {
+                "name": "Pack for the notification",
+                "list_price": 0.0,
+                "pack_ok": True,
+                "pack_type": "detailed",
+                "pack_component_price": "detailed",
+                "is_published": True,
+                "taxes_id": False,
+            }
+        )
+        self.env["product.pack.line"].create(
+            {
+                "parent_product_id": pack.product_variant_id.id,
+                "product_id": component.id,
+                "quantity": 2,
+            }
+        )
+        self.authenticate("portal_test", "portal_test")
+        res = self.make_jsonrpc_request(
+            "/shop/cart/add",
+            {
+                "product_template_id": pack.id,
+                "product_id": pack.product_variant_id.id,
+                "quantity": 1,
+            },
+        )
+        lines = res["notification_info"]["lines"]
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0]["price_total"], 240.0)
+
     def test__check_to_add_pack_component_pusblished(self):
         """
         Test when create a product pack with only published products as components.

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <template id="cart_lines_quantity" inherit_id="website_sale.cart_lines_quantity">
         <!-- We don't want to allow to add extra components. It all must follow the main pack -->
